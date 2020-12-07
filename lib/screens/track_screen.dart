@@ -1,3 +1,4 @@
+import 'package:audio_manager/audio_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:musicplayerapp/models/song.dart';
@@ -10,10 +11,52 @@ class TrackScreen extends StatefulWidget {
 }
 
 class _TrackScreenState extends State<TrackScreen> {
-  bool _isPlaying = false;
+  bool _isPlaying;
+  double _slider;
+  var audioManagerInstance = AudioManager.instance;
 
   List<Song> songs = getSongs();
   int indexSelected;
+
+  void setupAudio() {
+    audioManagerInstance.onEvents((events, args) {
+      switch (events) {
+        case AudioManagerEvents.start:
+          _slider = 0;
+          break;
+        case AudioManagerEvents.seekComplete:
+          _slider = audioManagerInstance.position.inMilliseconds /
+              audioManagerInstance.duration.inMilliseconds;
+          setState(() {
+
+          });
+          break;
+        case AudioManagerEvents.playstatus:
+          _isPlaying = audioManagerInstance.isPlaying;
+          setState(() {
+
+          });
+          break;
+        case AudioManagerEvents.timeupdate:
+          _slider = audioManagerInstance.position.inMilliseconds /
+              audioManagerInstance.duration.inMilliseconds;
+          audioManagerInstance.updateLrc(args["position"].toString());
+          setState(() {
+
+          });
+          break;
+        case AudioManagerEvents.ended:
+          audioManagerInstance.next();
+          setState(() {
+
+          });
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
