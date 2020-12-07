@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:musicplayerapp/models/song.dart';
 import 'package:musicplayerapp/utils/constant_colors.dart';
 import 'package:musicplayerapp/widgets/play_button.dart';
@@ -19,30 +20,56 @@ class _TrackScreenState extends State<TrackScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
-          child: ListView.separated(
-            physics: BouncingScrollPhysics(),
-            itemCount: songs.length,
-            separatorBuilder: (context, index) => Divider(height: 3, color: Colors.grey,),
-            itemBuilder: (context, index){
-              return ListTile(
-                leading: PlayButton(
-                  selectedIndex: indexSelected,
-                  index: index,
-                  onTap: (){
-                    setState(() {
-                      indexSelected = index;
-                    });
+          child: FutureBuilder(
+            future: FlutterAudioQuery().getSongs(sortType: SongSortType.DISPLAY_NAME),
+            // ignore: missing_return
+            builder: (context, snapshot){
+              List<SongInfo> songInfo = snapshot.data;
+              if(snapshot.hasData){
+
+                return ListView.separated(
+                  physics: BouncingScrollPhysics(),
+                  itemCount: songInfo.length,
+                  separatorBuilder: (context, index) => Divider(height: 3, color: Colors.grey,),
+                  // ignore: missing_return
+                  itemBuilder: (context, index){
+                    SongInfo song = songInfo[index];
+                    if(song.displayName.contains(".mp3")){
+                      return ListTile(
+                        leading: PlayButton(
+                          selectedIndex: indexSelected,
+                          index: index,
+                          onTap: (){
+                            setState(() {
+                              indexSelected = index;
+                            });
+                          },
+                          isPlaying: _isPlaying,
+                        ),
+                        title: Text(song.title, maxLines: 1, style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18.0
+                        ),),
+                        subtitle: Text(song.artist, style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12.0
+                        ),),
+                        trailing: IconButton(
+                          iconSize: 28.0,
+                          color: Colors.blue,
+                          onPressed: (){
+
+                          },
+                          icon: Icon(Icons.playlist_add),
+                        ),
+                      );
+                    }
                   },
-                  isPlaying: _isPlaying,
-                ),
-                title: Text(songs[index].songTitle, style: TextStyle(
-                  color: Colors.white,
-                ),),
-                subtitle: Text(songs[index].artistName, style: TextStyle(
-                  color: Colors.white,
-                ),),
-              );
+                );
+              }
+              return Container();
             },
+
           ),
         ),
       ],

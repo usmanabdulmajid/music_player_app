@@ -19,7 +19,7 @@ class PlayButton extends StatelessWidget {
       ),
       child: FlatButton(
         onPressed: onTap,
-        child: selectedIndex == index ? Icon(Icons.play_arrow) : Icon(Icons.pause),
+        child: selectedIndex == index ? Icon(Icons.play_arrow,color:  Colors.blue,) : Icon(Icons.pause, color: Colors.blue,),
         padding: EdgeInsets.all(0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
