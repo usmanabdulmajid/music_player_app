@@ -1,3 +1,4 @@
+import 'package:audio_manager/audio_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayerapp/screens/play_list_screen.dart';
@@ -14,6 +15,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   TabController _controller;
+  bool _isPlaying;
+  double _slider;
 
   List<Tab> myTabs = <Tab>[
     Tab(
@@ -41,11 +44,52 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
     )
   ];
 
+  void setupAudio() {
+    AudioManager.instance.onEvents((events, args) {
+      switch (events) {
+        case AudioManagerEvents.start:
+          _slider = 0;
+          break;
+        case AudioManagerEvents.seekComplete:
+          _slider =  AudioManager.instance.position.inMilliseconds /
+              AudioManager.instance.duration.inMilliseconds;
+          setState(() {
+
+          });
+          break;
+        case AudioManagerEvents.playstatus:
+          _isPlaying =  AudioManager.instance.isPlaying;
+          setState(() {
+
+          });
+          break;
+        case AudioManagerEvents.timeupdate:
+          _slider =  AudioManager.instance.position.inMilliseconds /
+              AudioManager.instance.duration.inMilliseconds;
+          AudioManager.instance.updateLrc(args["position"].toString());
+          setState(() {
+
+          });
+          break;
+        case AudioManagerEvents.ended:
+          AudioManager.instance.next();
+          setState(() {
+
+          });
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _controller = TabController(length: 5, vsync: this, initialIndex: 1);
+    setupAudio();
+
   }
   @override
   Widget build(BuildContext context) {

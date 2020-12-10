@@ -14,47 +14,104 @@ class _TrackScreenState extends State<TrackScreen> {
   bool _isPlaying;
   double _slider;
   var audioManagerInstance = AudioManager.instance;
+  FlutterAudioQuery flutterAudioQuery = FlutterAudioQuery();
+
 
   List<Song> songs = getSongs();
   int indexSelected;
 
-  void setupAudio() {
-    audioManagerInstance.onEvents((events, args) {
+  void setupAudio() async {
+    List<SongInfo> tracks;
+    List<AudioInfo> _list = [];
+    Future<List<SongInfo>> allSongs;
+    allSongs = flutterAudioQuery.getSongs(sortType: SongSortType.DISPLAY_NAME);
+    tracks = await allSongs;
+    /*allSongs.then((value) {
+      if(value != null){
+        value.forEach((element) {
+          setState(() {
+            tracks.add(element);
+          });
+        });
+      }
+    });*/
+    //print(allSongs);
+    //print("yjhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhmmmmmmmmmmm $tracks");
+    tracks.forEach((element) {
+      _list.add(AudioInfo(element.uri,
+        title: element.title,
+        desc: element.displayName,
+        coverUrl: element.albumArtwork,
+      ));
+    });
+    AudioManager.instance.audioList = _list;
+    AudioManager.instance.intercepter = true;
+    AudioManager.instance.play(auto: false);
+
+    AudioManager.instance.onEvents((events, args) {
+      print("$events, $args");
       switch (events) {
         case AudioManagerEvents.start:
+          print(
+              "start load data callback, curIndex is ${AudioManager.instance.curIndex}");
+          //_position = AudioManager.instance.position;
+          //_duration = AudioManager.instance.duration;
           _slider = 0;
+          setState(() {});
+          break;
+        case AudioManagerEvents.ready:
+          print("ready to play");
+          //_error = null;
+          //_sliderVolume = AudioManager.instance.volume;
+          //_position = AudioManager.instance.position;
+          //_duration = AudioManager.instance.duration;
+          setState(() {});
+          // if you need to seek times, must after AudioManagerEvents.ready event invoked
+          // AudioManager.instance.seekTo(Duration(seconds: 10));
           break;
         case AudioManagerEvents.seekComplete:
-          _slider = audioManagerInstance.position.inMilliseconds /
-              audioManagerInstance.duration.inMilliseconds;
-          setState(() {
-
-          });
+          //_position = AudioManager.instance.position;
+          //_slider = _position.inMilliseconds / _duration.inMilliseconds;
+          setState(() {});
+          print("seek event is completed. position is [$args]/ms");
+          break;
+        case AudioManagerEvents.buffering:
+          print("buffering $args");
           break;
         case AudioManagerEvents.playstatus:
-          _isPlaying = audioManagerInstance.isPlaying;
-          setState(() {
-
-          });
+          //isPlaying = AudioManager.instance.isPlaying;
+          setState(() {});
           break;
         case AudioManagerEvents.timeupdate:
-          _slider = audioManagerInstance.position.inMilliseconds /
-              audioManagerInstance.duration.inMilliseconds;
-          audioManagerInstance.updateLrc(args["position"].toString());
-          setState(() {
+          //_position = AudioManager.instance.position;
+          //_slider = _position.inMilliseconds / _duration.inMilliseconds;
+          setState(() {});
+          AudioManager.instance.updateLrc(args["position"].toString());
+          break;
+        case AudioManagerEvents.error:
+          print("the erroro is that its not ----- $args");
+          //_error = args;
 
-          });
+          setState(() {});
           break;
         case AudioManagerEvents.ended:
-          audioManagerInstance.next();
-          setState(() {
-
-          });
+          AudioManager.instance.next();
+          break;
+        case AudioManagerEvents.volumeChange:
+          //_sliderVolume = AudioManager.instance.volume;
+          setState(() {});
           break;
         default:
           break;
       }
     });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    setupAudio();
   }
 
   @override
@@ -79,16 +136,10 @@ class _TrackScreenState extends State<TrackScreen> {
                     SongInfo song = songInfo[index];
                     if(song.displayName.contains(".mp3")){
                       return ListTile(
-                        leading: PlayButton(
-                          selectedIndex: indexSelected,
-                          index: index,
-                          onTap: (){
-                            setState(() {
-                              indexSelected = index;
-                            });
-                          },
-                          isPlaying: _isPlaying,
-                        ),
+                        onTap: (){
+                          AudioManager.instance.play(index: index);
+
+                        },
                         title: Text(song.title, maxLines: 1, style: TextStyle(
                           color: Colors.white,
                           fontSize: 18.0
