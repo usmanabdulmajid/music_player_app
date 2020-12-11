@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:audio_manager/audio_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:musicplayerapp/models/custom_popup_item.dart';
 import 'package:musicplayerapp/models/song.dart';
 import 'package:musicplayerapp/utils/constant_colors.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:musicplayerapp/widgets/play_button.dart';
 // ignore: must_be_immutable
 class TrackScreen extends StatefulWidget {
@@ -111,7 +117,7 @@ class _TrackScreenState extends State<TrackScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    setupAudio();
+    //setupAudio();
   }
 
   @override
@@ -136,8 +142,12 @@ class _TrackScreenState extends State<TrackScreen> {
                     SongInfo song = songInfo[index];
                     if(song.displayName.contains(".mp3")){
                       return ListTile(
-                        onTap: (){
-                          AudioManager.instance.play(index: index);
+                        onTap: ()  {
+                          print("this is the supposed file path: ${song.filePath}");
+                          //create a new player
+                          AudioPlayer audioPlayer = AudioPlayer();
+                          String fl = "file://" + song.filePath;
+                          audioPlayer.play(fl, isLocal: true);
 
                         },
                         title: Text(song.title, maxLines: 1, style: TextStyle(
@@ -148,14 +158,7 @@ class _TrackScreenState extends State<TrackScreen> {
                           color: Colors.white,
                           fontSize: 12.0
                         ),),
-                        trailing: IconButton(
-                          iconSize: 28.0,
-                          color: Colors.blue,
-                          onPressed: (){
-
-                          },
-                          icon: Icon(Icons.playlist_add),
-                        ),
+                        trailing: getPopUp(),
                       );
                     }
                   },
@@ -169,4 +172,38 @@ class _TrackScreenState extends State<TrackScreen> {
       ],
     );
   }
+
+  Widget getPopUp() => PopupMenuButton(
+    color: kBackGroundColor,
+    itemBuilder: (context){
+      return CustomPopUpItem.trackPopUpItem().map(( CustomPopUpItem e) {
+        return PopupMenuItem(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(e.icon, size: 12.0, color: Colors.grey,),
+              //SizedBox(width: 10.0,),
+              Text(e.title, style: TextStyle(
+                color: Colors.white,
+                fontSize: 12.0
+              ),)
+            ],
+          ),
+        );
+      }).toList();
+    },
+    child: ImageIcon(
+      AssetImage("assets/icons/icons8_menu_vertical_16px.png"),
+      color: Colors.white,
+    ),
+
+  );
+
+  Future<String> getSongPath(String uri) async {
+    Directory directory =  await getExternalStorageDirectory();
+    String pth = directory.path + uri;
+    return pth;
+  }
+
+
 }
