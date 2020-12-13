@@ -10,6 +10,7 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:musicplayerapp/widgets/play_button.dart';
+
 // ignore: must_be_immutable
 class TrackScreen extends StatefulWidget {
   @override
@@ -22,10 +23,10 @@ class _TrackScreenState extends State<TrackScreen> {
   var audioManagerInstance = AudioManager.instance;
   FlutterAudioQuery flutterAudioQuery = FlutterAudioQuery();
 
-
   List<Song> songs = getSongs();
   int indexSelected;
 
+  //this method is for the audio_manager package
   void setupAudio() async {
     List<SongInfo> tracks;
     List<AudioInfo> _list = [];
@@ -42,9 +43,9 @@ class _TrackScreenState extends State<TrackScreen> {
       }
     });*/
     //print(allSongs);
-    //print("yjhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhmmmmmmmmmmm $tracks");
     tracks.forEach((element) {
-      _list.add(AudioInfo(element.uri,
+      _list.add(AudioInfo(
+        element.uri,
         title: element.title,
         desc: element.displayName,
         coverUrl: element.albumArtwork,
@@ -127,37 +128,40 @@ class _TrackScreenState extends State<TrackScreen> {
       children: [
         Expanded(
           child: FutureBuilder(
-            future: FlutterAudioQuery().getSongs(sortType: SongSortType.DISPLAY_NAME),
+            future: FlutterAudioQuery()
+                .getSongs(sortType: SongSortType.DISPLAY_NAME),
             // ignore: missing_return
-            builder: (context, snapshot){
+            builder: (context, snapshot) {
               List<SongInfo> songInfo = snapshot.data;
-              if(snapshot.hasData){
-
+              if (snapshot.hasData) {
                 return ListView.separated(
                   physics: BouncingScrollPhysics(),
                   itemCount: songInfo.length,
-                  separatorBuilder: (context, index) => Divider(height: 3, color: Colors.grey,),
+                  separatorBuilder: (context, index) => Divider(
+                    height: 3,
+                    color: Colors.grey,
+                  ),
                   // ignore: missing_return
-                  itemBuilder: (context, index){
+                  itemBuilder: (context, index) {
                     SongInfo song = songInfo[index];
-                    if(song.displayName.contains(".mp3")){
+                    if (song.displayName.contains(".mp3")) {
                       return ListTile(
-                        onTap: ()  {
-                          print("this is the supposed file path: ${song.filePath}");
+                        onTap: () {
+                          print(
+                              "this is the supposed file path: ${song.filePath}");
                           //create a new player
                           AudioPlayer audioPlayer = AudioPlayer();
-                          String fl = "file://" + song.filePath;
-                          audioPlayer.play(fl, isLocal: true);
-
+                          audioPlayer.play(song.filePath, isLocal: true);
                         },
-                        title: Text(song.title, maxLines: 1, style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18.0
-                        ),),
-                        subtitle: Text(song.artist, style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12.0
-                        ),),
+                        title: Text(
+                          song.title,
+                          maxLines: 1,
+                          style: TextStyle(color: Colors.white, fontSize: 18.0),
+                        ),
+                        subtitle: Text(
+                          song.artist,
+                          style: TextStyle(color: Colors.white, fontSize: 12.0),
+                        ),
                         trailing: getPopUp(),
                       );
                     }
@@ -166,7 +170,6 @@ class _TrackScreenState extends State<TrackScreen> {
               }
               return Container();
             },
-
           ),
         ),
       ],
@@ -174,36 +177,37 @@ class _TrackScreenState extends State<TrackScreen> {
   }
 
   Widget getPopUp() => PopupMenuButton(
-    color: kBackGroundColor,
-    itemBuilder: (context){
-      return CustomPopUpItem.trackPopUpItem().map(( CustomPopUpItem e) {
-        return PopupMenuItem(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(e.icon, size: 12.0, color: Colors.grey,),
-              //SizedBox(width: 10.0,),
-              Text(e.title, style: TextStyle(
-                color: Colors.white,
-                fontSize: 12.0
-              ),)
-            ],
-          ),
-        );
-      }).toList();
-    },
-    child: ImageIcon(
-      AssetImage("assets/icons/icons8_menu_vertical_16px.png"),
-      color: Colors.white,
-    ),
-
-  );
+        color: kBackGroundColor,
+        itemBuilder: (context) {
+          return CustomPopUpItem.trackPopUpItem().map((CustomPopUpItem e) {
+            return PopupMenuItem(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(
+                    e.icon,
+                    size: 12.0,
+                    color: Colors.grey,
+                  ),
+                  //SizedBox(width: 10.0,),
+                  Text(
+                    e.title,
+                    style: TextStyle(color: Colors.white, fontSize: 12.0),
+                  )
+                ],
+              ),
+            );
+          }).toList();
+        },
+        child: ImageIcon(
+          AssetImage("assets/icons/icons8_menu_vertical_16px.png"),
+          color: Colors.white,
+        ),
+      );
 
   Future<String> getSongPath(String uri) async {
-    Directory directory =  await getExternalStorageDirectory();
+    Directory directory = await getExternalStorageDirectory();
     String pth = directory.path + uri;
     return pth;
   }
-
-
 }
