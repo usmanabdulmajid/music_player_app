@@ -35,7 +35,9 @@ class _ArtistScreenState extends State<ArtistScreen> {
                         future: flutterAudioQuery.getArtwork(type: ResourceType.ARTIST, id: artistInfo.id),
                         builder: (context, snapshot){
                           if(snapshot.data == null){
-                            return CircleAvatar();
+                            return CircleAvatar(
+                              backgroundColor: Colors.transparent,
+                            );
                           }
                           return ClipRRect(
                             borderRadius: BorderRadius.all(Radius.circular(200)),

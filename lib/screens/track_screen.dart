@@ -20,8 +20,10 @@ class TrackScreen extends StatefulWidget {
 class _TrackScreenState extends State<TrackScreen> {
   bool _isPlaying;
   double _slider;
-  var audioManagerInstance = AudioManager.instance;
+  //var audioManagerInstance = AudioManager.instance;
+  //AudioPlayer audioPlayer = AudioPlayer();
   FlutterAudioQuery flutterAudioQuery = FlutterAudioQuery();
+  final assetsAudioPlayer = AssetsAudioPlayer();
 
   List<Song> songs = getSongs();
   int indexSelected;
@@ -114,10 +116,21 @@ class _TrackScreenState extends State<TrackScreen> {
     });
   }
 
+  void assetAudioPlayerSetUp() {
+    //assetsAudioPlayer.setLoopMode(LoopMode.none);
+    assetsAudioPlayer.isPlaying.listen((event) {
+      if (assetsAudioPlayer.isPlaying.value != true) {
+        //assetsAudioPlayer.next(keepLoopMode: false);
+      }
+    });
+    assetsAudioPlayer.loopMode.listen((event) {});
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    assetAudioPlayerSetUp();
     //setupAudio();
   }
 
@@ -135,6 +148,7 @@ class _TrackScreenState extends State<TrackScreen> {
               List<SongInfo> songInfo = snapshot.data;
               if (snapshot.hasData) {
                 return ListView.separated(
+                  padding: EdgeInsets.all(0.0),
                   physics: BouncingScrollPhysics(),
                   itemCount: songInfo.length,
                   separatorBuilder: (context, index) => Divider(
@@ -146,13 +160,23 @@ class _TrackScreenState extends State<TrackScreen> {
                     SongInfo song = songInfo[index];
                     if (song.displayName.contains(".mp3")) {
                       return ListTile(
+                        contentPadding: EdgeInsets.all(0.0),
                         onTap: () {
-                          print(
-                              "this is the supposed file path: ${song.filePath}");
-                          //create a new player
-                          AudioPlayer audioPlayer = AudioPlayer();
-                          audioPlayer.play(song.filePath, isLocal: true);
+                          //assetsAudioPlayer.next(keepLoopMode: false);
                         },
+                        leading: PlayButton(
+                          onTap: () async {
+                            if (assetsAudioPlayer.isPlaying.value) {
+                              assetsAudioPlayer.open(
+                                Audio.file(song.filePath),
+                              );
+                            } else {
+                              assetsAudioPlayer.open(
+                                Audio.file(song.filePath),
+                              );
+                            }
+                          },
+                        ),
                         title: Text(
                           song.title,
                           maxLines: 1,
@@ -204,10 +228,4 @@ class _TrackScreenState extends State<TrackScreen> {
           color: Colors.white,
         ),
       );
-
-  Future<String> getSongPath(String uri) async {
-    Directory directory = await getExternalStorageDirectory();
-    String pth = directory.path + uri;
-    return pth;
-  }
 }
