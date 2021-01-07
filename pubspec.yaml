@@ -31,8 +31,8 @@ dependencies:
   flutter_audio_query: "^0.3.5+6"
   audio_manager: ^0.6.2
   assets_audio_player: ^2.0.13+1
-  path_provider: ^1.6.24
   audioplayers: ^0.15.1
+  provider: ^4.3.2+3
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,3 @@
-import 'package:audio_manager/audio_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:musicplayerapp/screens/play_list_screen.dart';
@@ -8,89 +7,63 @@ import 'package:musicplayerapp/utils/constant_colors.dart';
 import 'album_screen.dart';
 import 'artist_screen.dart';
 import 'favorite_screen.dart';
+
 class Home extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
+class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   TabController _controller;
   bool _isPlaying;
   double _slider;
 
   List<Tab> myTabs = <Tab>[
     Tab(
-      child: Icon(Icons.favorite, color: Colors.red,),
+      child: Icon(
+        Icons.favorite,
+        color: Colors.red,
+      ),
     ),
     Tab(
-      child: Text("Tracks", style: TextStyle(
-        color: Colors.grey,
-      ),),
+      child: Text(
+        "Tracks",
+        style: TextStyle(
+          color: Colors.grey,
+        ),
+      ),
     ),
     Tab(
-      child: Text("Playlists", style: TextStyle(
-        color: Colors.grey,
-      ),),
+      child: Text(
+        "Playlists",
+        style: TextStyle(
+          color: Colors.grey,
+        ),
+      ),
     ),
     Tab(
-      child: Text("Album", style: TextStyle(
-        color: Colors.grey
-      ),),
+      child: Text(
+        "Album",
+        style: TextStyle(color: Colors.grey),
+      ),
     ),
     Tab(
-      child: Text("Artists", style: TextStyle(
-        color: Colors.grey,
-      ),),
+      child: Text(
+        "Artists",
+        style: TextStyle(
+          color: Colors.grey,
+        ),
+      ),
     )
   ];
-
-  void setupAudio() {
-    AudioManager.instance.onEvents((events, args) {
-      switch (events) {
-        case AudioManagerEvents.start:
-          _slider = 0;
-          break;
-        case AudioManagerEvents.seekComplete:
-          _slider =  AudioManager.instance.position.inMilliseconds /
-              AudioManager.instance.duration.inMilliseconds;
-          setState(() {
-
-          });
-          break;
-        case AudioManagerEvents.playstatus:
-          _isPlaying =  AudioManager.instance.isPlaying;
-          setState(() {
-
-          });
-          break;
-        case AudioManagerEvents.timeupdate:
-          _slider =  AudioManager.instance.position.inMilliseconds /
-              AudioManager.instance.duration.inMilliseconds;
-          AudioManager.instance.updateLrc(args["position"].toString());
-          setState(() {
-
-          });
-          break;
-        case AudioManagerEvents.ended:
-          AudioManager.instance.next();
-          setState(() {
-
-          });
-          break;
-        default:
-          break;
-      }
-    });
-  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _controller = TabController(length: 5, vsync: this, initialIndex: 1);
-    setupAudio();
-
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,21 +80,21 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                   iconSize: 30.0,
                   color: Colors.blue,
                   icon: Icon(Icons.search),
-                  onPressed: (){
-
-                  },
+                  onPressed: () {},
                 ),
-                SizedBox(width: 10.0,),
+                SizedBox(
+                  width: 10.0,
+                ),
                 IconButton(
                   color: Colors.white,
                   icon: Icon(Icons.menu_outlined),
-                  onPressed: (){
-
-                  },
+                  onPressed: () {},
                 )
               ],
             ),
-            SizedBox(height: 10.0,),
+            SizedBox(
+              height: 10.0,
+            ),
             Container(
               height: 38.0,
               decoration: BoxDecoration(
@@ -139,9 +112,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                 indicatorWeight: 2.0,
                 labelColor: Colors.white,
                 tabs: myTabs,
-                onTap: (int a){
-
-                },
+                onTap: (int a) {},
               ),
             ),
             Expanded(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:musicplayerapp/widgets/playlist_icon.dart';
 
+import 'category_song_screen.dart';
+
 class PlayListScreen extends StatefulWidget {
   @override
   _PlayListScreenState createState() => _PlayListScreenState();
@@ -55,6 +57,15 @@ class _PlayListScreenState extends State<PlayListScreen> {
                           PlaylistInfo playList = playListArray[index];
                           return ListTile(
                             contentPadding: EdgeInsets.all(0.0),
+                            onTap: () {
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                return CategorySongScreen(
+                                  dataModel: flutterAudioQuery
+                                      .getSongsFromPlaylist(playlist: playList),
+                                );
+                              }));
+                            },
                             leading: PlayListIcon(),
                             title: Text(
                               playList.name,

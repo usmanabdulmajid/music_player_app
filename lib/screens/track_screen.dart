@@ -1,15 +1,18 @@
 import 'dart:io';
 
-import 'package:audio_manager/audio_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:musicplayerapp/models/custom_popup_item.dart';
 import 'package:musicplayerapp/models/song.dart';
+import 'package:musicplayerapp/screens/detail_screen.dart';
 import 'package:musicplayerapp/utils/constant_colors.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:musicplayerapp/utils/song_category.dart';
 import 'package:musicplayerapp/widgets/play_button.dart';
+import 'package:musicplayerapp/widgets/playlist_icon.dart';
+import 'package:provider/provider.dart';
+import 'package:musicplayerapp/providers/song_controller.dart';
 
 // ignore: must_be_immutable
 class TrackScreen extends StatefulWidget {
@@ -24,118 +27,68 @@ class _TrackScreenState extends State<TrackScreen> {
   //AudioPlayer audioPlayer = AudioPlayer();
   FlutterAudioQuery flutterAudioQuery = FlutterAudioQuery();
   final assetsAudioPlayer = AssetsAudioPlayer();
+  SongController controller;
 
-  List<Song> songs = getSongs();
+  //List<Song> songs = getSongs();
   int indexSelected;
 
-  //this method is for the audio_manager package
-  void setupAudio() async {
-    List<SongInfo> tracks;
-    List<AudioInfo> _list = [];
-    Future<List<SongInfo>> allSongs;
-    allSongs = flutterAudioQuery.getSongs(sortType: SongSortType.DISPLAY_NAME);
-    tracks = await allSongs;
-    /*allSongs.then((value) {
-      if(value != null){
-        value.forEach((element) {
-          setState(() {
-            tracks.add(element);
-          });
-        });
-      }
-    });*/
-    //print(allSongs);
-    tracks.forEach((element) {
-      _list.add(AudioInfo(
-        element.uri,
-        title: element.title,
-        desc: element.displayName,
-        coverUrl: element.albumArtwork,
-      ));
+  Playlist playlist({List<SongInfo> songInfo}) {
+    final fetchedAudios = songInfo.map((e) {
+      Audio.file(e.filePath,
+          metas: Metas(
+            artist: e.artist,
+            album: e.album,
+            title: e.title,
+          ));
+    }).toList();
+    var audios = <Audio>[];
+    setState(() {
+      audios = fetchedAudios;
     });
-    AudioManager.instance.audioList = _list;
-    AudioManager.instance.intercepter = true;
-    AudioManager.instance.play(auto: false);
-
-    AudioManager.instance.onEvents((events, args) {
-      print("$events, $args");
-      switch (events) {
-        case AudioManagerEvents.start:
-          print(
-              "start load data callback, curIndex is ${AudioManager.instance.curIndex}");
-          //_position = AudioManager.instance.position;
-          //_duration = AudioManager.instance.duration;
-          _slider = 0;
-          setState(() {});
-          break;
-        case AudioManagerEvents.ready:
-          print("ready to play");
-          //_error = null;
-          //_sliderVolume = AudioManager.instance.volume;
-          //_position = AudioManager.instance.position;
-          //_duration = AudioManager.instance.duration;
-          setState(() {});
-          // if you need to seek times, must after AudioManagerEvents.ready event invoked
-          // AudioManager.instance.seekTo(Duration(seconds: 10));
-          break;
-        case AudioManagerEvents.seekComplete:
-          //_position = AudioManager.instance.position;
-          //_slider = _position.inMilliseconds / _duration.inMilliseconds;
-          setState(() {});
-          print("seek event is completed. position is [$args]/ms");
-          break;
-        case AudioManagerEvents.buffering:
-          print("buffering $args");
-          break;
-        case AudioManagerEvents.playstatus:
-          //isPlaying = AudioManager.instance.isPlaying;
-          setState(() {});
-          break;
-        case AudioManagerEvents.timeupdate:
-          //_position = AudioManager.instance.position;
-          //_slider = _position.inMilliseconds / _duration.inMilliseconds;
-          setState(() {});
-          AudioManager.instance.updateLrc(args["position"].toString());
-          break;
-        case AudioManagerEvents.error:
-          print("the erroro is that its not ----- $args");
-          //_error = args;
-
-          setState(() {});
-          break;
-        case AudioManagerEvents.ended:
-          AudioManager.instance.next();
-          break;
-        case AudioManagerEvents.volumeChange:
-          //_sliderVolume = AudioManager.instance.volume;
-          setState(() {});
-          break;
-        default:
-          break;
-      }
-    });
+    Playlist playlist = Playlist(audios: audios);
+    return playlist;
   }
 
-  void assetAudioPlayerSetUp() {
-    //assetsAudioPlayer.setLoopMode(LoopMode.none);
-    assetsAudioPlayer.isPlaying.listen((event) {
-      if (assetsAudioPlayer.isPlaying.value != true) {
-        //assetsAudioPlayer.next(keepLoopMode: false);
-      }
+  Playlist newPlaylist;
+
+  void assetAudioPlayerSetUp() async {
+    final songs =
+        await flutterAudioQuery.getSongs(sortType: SongSortType.DISPLAY_NAME);
+    var audios = <Audio>[];
+    final fetechedAudios = songs
+        .map((s) => Audio.file(s.filePath,
+            metas: Metas(
+              artist: s.artist,
+              album: s.album,
+              //image: MetasImage.asset("assets/images/country.jpg"),
+              title: s.title,
+            )))
+        .toList();
+    fetechedAudios.forEach((element) {
+      print(element.path);
+      //print(element.metas.image.path);
     });
-    assetsAudioPlayer.loopMode.listen((event) {});
+    audios = fetechedAudios;
+    newPlaylist = Playlist(audios: audios);
+  }
+
+  List<Audio> audioList = [];
+
+  void setUp() async {
+    controller = Provider.of<SongController>(context, listen: false);
+    await controller.setUpPlaylist(songCategory: SongCategory.allTracks);
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    assetAudioPlayerSetUp();
-    //setupAudio();
+    setUp();
   }
 
   @override
   Widget build(BuildContext context) {
+    //final controller = Provider.of<SongController>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -145,8 +98,9 @@ class _TrackScreenState extends State<TrackScreen> {
                 .getSongs(sortType: SongSortType.DISPLAY_NAME),
             // ignore: missing_return
             builder: (context, snapshot) {
-              List<SongInfo> songInfo = snapshot.data;
               if (snapshot.hasData) {
+                List<SongInfo> songInfo = snapshot.data;
+
                 return ListView.separated(
                   padding: EdgeInsets.all(0.0),
                   physics: BouncingScrollPhysics(),
@@ -163,18 +117,19 @@ class _TrackScreenState extends State<TrackScreen> {
                         contentPadding: EdgeInsets.all(0.0),
                         onTap: () {
                           //assetsAudioPlayer.next(keepLoopMode: false);
+                          //assetsAudioPlayer.next(keepLoopMode: false);
+                          //assetsAudioPlayer.play();
+                          controller.play(index: index);
                         },
                         leading: PlayButton(
                           onTap: () async {
-                            if (assetsAudioPlayer.isPlaying.value) {
-                              assetsAudioPlayer.open(
-                                Audio.file(song.filePath),
-                              );
-                            } else {
-                              assetsAudioPlayer.open(
-                                Audio.file(song.filePath),
-                              );
-                            }
+                            //controller.play(index: index);
+                            //controller.next();
+                            print("jhgfdsdfghjkjhgfdfghjkjhgf");
+                            //assetsAudioPlayer.open(newPlaylist);
+                            //print(newPlaylist);
+                            //newPlaylist.add(Audio.file(song.filePath));
+                            //assetsAudioPlayer.open(Audio.file(song.filePath));
                           },
                         ),
                         title: Text(

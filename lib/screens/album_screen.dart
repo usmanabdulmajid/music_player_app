@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:musicplayerapp/screens/category_song_screen.dart';
+import 'package:musicplayerapp/trest.dart';
 
 class AlbumScreen extends StatefulWidget {
   @override
@@ -31,7 +33,15 @@ class _AlbumScreenState extends State<AlbumScreen> {
                     AlbumInfo albumInfo = albumList[index];
                     return ListTile(
                       contentPadding: EdgeInsets.all(0.0),
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          return CategorySongScreen(
+                            dataModel: flutterAudioQuery.getSongsFromAlbum(
+                                albumId: albumInfo.id),
+                          );
+                        }));
+                      },
                       leading: SizedBox(
                         width: 40.0,
                         height: 40.0,
